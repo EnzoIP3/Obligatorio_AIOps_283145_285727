@@ -38,7 +38,6 @@ namespace PharmaGo.UsersService.Controllers
                         ["component"] = "LoginController",
                         ["operation"] = "login",
                         ["outcome"] = "success",
-                        ["user_name"] = authorization.UserName,
                         ["user_id"] = authorization.UserId
                     });
                 
@@ -55,7 +54,7 @@ namespace PharmaGo.UsersService.Controllers
                         ["component"] = "LoginController",
                         ["operation"] = "login",
                         ["outcome"] = "failed",
-                        ["user_name"] = userModel.UserName ?? "unknown"
+                        ["user_provided"] = !string.IsNullOrWhiteSpace(userModel.UserName)
                     });
                 
                 throw;

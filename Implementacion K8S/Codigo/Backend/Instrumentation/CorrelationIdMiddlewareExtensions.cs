@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Instrumentation;
@@ -22,7 +24,12 @@ public static class CorrelationIdMiddlewareExtensions
                 : header.Trim();
             context.Items[HttpContextItemKey] = correlationId;
             context.Response.Headers["X-Correlation-ID"] = correlationId;
-            await next();
+
+            var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+            var hostEnvironment = context.RequestServices.GetRequiredService<IHostEnvironment>();
+            var log = loggerFactory.CreateLogger("Request");
+            using (log.BeginScope(CreateRequestScope(correlationId, hostEnvironment)))
+                await next();
         });
     }
 
@@ -40,9 +47,45 @@ public static class CorrelationIdMiddlewareExtensions
             context.Items[HttpContextItemKey] = correlationId;
 
             var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+            var hostEnvironment = context.RequestServices.GetRequiredService<IHostEnvironment>();
             var log = loggerFactory.CreateLogger("Request");
-            using (log.BeginScope(new Dictionary<string, object> { ["correlation_id"] = correlationId }))
+            using (log.BeginScope(CreateRequestScope(correlationId, hostEnvironment)))
                 await next();
         });
     }
+
+    /// <summary>
+    /// Emits one searchable JSON event per request without logging query strings, headers or request bodies.
+    /// </summary>
+    public static IApplicationBuilder UseStructuredRequestLogging(this IApplicationBuilder app)
+    {
+        return app.Use(async (context, next) =>
+        {
+            var startedAt = Stopwatch.GetTimestamp();
+            try
+            {
+                await next();
+            }
+            finally
+            {
+                var elapsedMilliseconds = (Stopwatch.GetTimestamp() - startedAt) * 1000d / Stopwatch.Frequency;
+                var log = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("Request");
+                log.LogInformation(
+                    "HTTP request completed {http_method} {path} with status {status_code} in {duration_ms} ms",
+                    context.Request.Method,
+                    context.Request.Path.Value ?? "/",
+                    context.Response.StatusCode,
+                    Math.Round(elapsedMilliseconds, 2));
+            }
+        });
+    }
+
+    private static Dictionary<string, object> CreateRequestScope(
+        string correlationId,
+        IHostEnvironment hostEnvironment) => new()
+        {
+            ["correlation_id"] = correlationId,
+            ["service"] = hostEnvironment.ApplicationName,
+            ["environment"] = hostEnvironment.EnvironmentName
+        };
 }

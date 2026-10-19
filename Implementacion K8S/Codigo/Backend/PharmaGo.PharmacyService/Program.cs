@@ -42,6 +42,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("MyAllowedOrigins");
 app.UseServiceCorrelationScope();
+app.UseStructuredRequestLogging();
 
 app.UseAuthorization();
 

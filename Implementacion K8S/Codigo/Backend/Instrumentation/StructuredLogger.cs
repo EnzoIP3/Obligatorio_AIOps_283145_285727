@@ -119,6 +119,7 @@ namespace Instrumentation
                 ["timestamp_utc"] = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
                 ["level"] = ToLevelLabel(logLevel),
                 ["service"] = _hostEnvironment.ApplicationName,
+                ["environment"] = _hostEnvironment.EnvironmentName,
                 ["correlation_id"] = correlationId
             };
 

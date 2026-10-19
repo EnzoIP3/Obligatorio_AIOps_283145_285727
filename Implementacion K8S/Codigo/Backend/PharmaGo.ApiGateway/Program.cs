@@ -70,6 +70,7 @@ var app = builder.Build();
 
 app.UseCors("MyAllowedOrigins");
 app.UseGatewayCorrelationId();
+app.UseStructuredRequestLogging();
 
 if (app.Environment.IsDevelopment())
 {
