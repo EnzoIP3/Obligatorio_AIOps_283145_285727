@@ -9,7 +9,7 @@ La aplicación se ejecuta en un único nodo (minikube) con todos los componentes
 - **Frontend**: pharmago-ui
 - **Backend**: pharmago-api-gateway, pharmago-users-service, pharmago-pharmacy-service
 - **Base de datos**: pharmago-db (SQL Server Express)
-- **Telemetría y observabilidad**: otlp-collector, prometheus, grafana, elasticsearch, kibana, fluent-bit
+- **Telemetría y observabilidad**: otlp-collector, Jaeger, prometheus, grafana, elasticsearch, kibana, fluent-bit
 
 **Requisito de memoria**: El nodo debe tener al menos 5-6GB de RAM para soportar Elasticsearch (1.5Gi), Kibana (2Gi), SQL Server Express (1.5Gi) y el resto de servicios.
 
@@ -174,6 +174,7 @@ Servicios disponibles en:
 - **BD (SQL Server)**: `127.0.0.1,11433` (sa / Str0ngP@ssword!)
 - **Prometheus**: http://127.0.0.1:9090
 - **Grafana**: http://127.0.0.1:3000 (admin/admin)
+- **Jaeger**: http://127.0.0.1:16686
 - **Kibana**: http://127.0.0.1:5601
 
 Para detener: `./port-forward.sh --stop`
@@ -426,6 +427,7 @@ k8s/
 │   │   └── pharmacy-service-deployment.yaml
 │   └── ops/
 │       ├── db-deployment.yaml
+│       ├── jaeger-deployment.yaml
 │       ├── otel-collector-deployment.yaml
 │       ├── prometheus-deployment.yaml
 │       ├── grafana-deployment.yaml
@@ -441,6 +443,7 @@ k8s/
 │   │   └── pharmacy-service-service.yaml
 │   └── ops/
 │       ├── db-service.yaml
+│       ├── jaeger-service.yaml
 │       ├── otel-collector-service.yaml
 │       ├── prometheus-service.yaml
 │       ├── grafana-service.yaml

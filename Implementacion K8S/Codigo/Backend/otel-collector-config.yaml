@@ -9,6 +9,10 @@ exporters:
     endpoint: "0.0.0.0:8889"
     resource_to_telemetry_conversion:
       enabled: true
+  otlp/jaeger:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
   debug: {}
 
 service:
@@ -16,3 +20,6 @@ service:
     metrics:
       receivers: [otlp]
       exporters: [prometheus, debug]
+    traces:
+      receivers: [otlp]
+      exporters: [otlp/jaeger, debug]

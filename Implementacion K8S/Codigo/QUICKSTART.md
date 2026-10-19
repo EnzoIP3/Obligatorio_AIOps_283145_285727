@@ -21,6 +21,7 @@ Esto levanta automáticamente:
 - Prometheus
 - Grafana
 - OpenTelemetry Collector
+- Jaeger
 
 ### Acceso a Servicios
 
@@ -32,6 +33,7 @@ Esto levanta automáticamente:
 - **Grafana**: http://127.0.0.1:3000 (admin/admin)
   - Datasource de Prometheus pre-configurado
   - Dashboard "PharmaGo - Overview" incluido
+- **Jaeger**: http://127.0.0.1:16686
 
 ### Persistencia de Datos
 
