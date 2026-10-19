@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Instrumentation;
 using InstrumentationInterface;
 using Microsoft.AspNetCore.Mvc;
 using PharmaGo.PharmacyService.IBusinessLogic;
@@ -67,6 +69,9 @@ namespace PharmaGo.PharmacyService.Controllers
         [HttpPost]
         public IActionResult CreatePurchase([FromBody] PurchaseModelRequest purchaseModel)
         {
+            using var activity = PharmaGoActivitySource.Source.StartActivity("pharmacy.purchase.create", ActivityKind.Internal);
+            activity?.SetTag("pharmago.operation", "create_purchase");
+
             try
             {
                 var converter = new PurchaseModelRequestToPurchaseConverter();

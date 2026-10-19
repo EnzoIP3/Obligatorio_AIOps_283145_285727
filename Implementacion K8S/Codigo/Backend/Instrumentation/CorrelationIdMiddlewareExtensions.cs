@@ -82,10 +82,21 @@ public static class CorrelationIdMiddlewareExtensions
 
     private static Dictionary<string, object> CreateRequestScope(
         string correlationId,
-        IHostEnvironment hostEnvironment) => new()
+        IHostEnvironment hostEnvironment)
+    {
+        var scope = new Dictionary<string, object>
         {
             ["correlation_id"] = correlationId,
             ["service"] = hostEnvironment.ApplicationName,
             ["environment"] = hostEnvironment.EnvironmentName
         };
+
+        if (Activity.Current is { } activity)
+        {
+            scope["trace_id"] = activity.TraceId.ToString();
+            scope["span_id"] = activity.SpanId.ToString();
+        }
+
+        return scope;
+    }
 }

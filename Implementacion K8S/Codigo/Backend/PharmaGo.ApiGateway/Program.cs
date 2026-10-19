@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -6,6 +7,9 @@ using PharmaGo.ApiGateway.Middleware;
 using Instrumentation;
 using InstrumentationInterface;
 using Yarp.ReverseProxy.Transforms;
+
+Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+Activity.ForceDefaultIdFormat = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +39,21 @@ builder.Services.AddReverseProxy()
                 context.ProxyRequest.Headers.Remove("X-Correlation-ID");
                 context.ProxyRequest.Headers.TryAddWithoutValidation("X-Correlation-ID", correlationId);
             }
+
+            // YARP does not rely on the application correlation header for W3C trace propagation.
+            // Forward the current server Activity explicitly to the downstream service.
+            if (Activity.Current?.Id is string traceParent && !string.IsNullOrEmpty(traceParent))
+            {
+                context.ProxyRequest.Headers.Remove("traceparent");
+                context.ProxyRequest.Headers.TryAddWithoutValidation("traceparent", traceParent);
+
+                if (!string.IsNullOrEmpty(Activity.Current.TraceStateString))
+                {
+                    context.ProxyRequest.Headers.Remove("tracestate");
+                    context.ProxyRequest.Headers.TryAddWithoutValidation("tracestate", Activity.Current.TraceStateString);
+                }
+            }
+
             return default;
         });
     });
@@ -49,6 +68,19 @@ builder.Services.AddOpenTelemetry()
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddMeter("PharmaGo.CustomMetrics")
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri("http://otlp-collector:4317");
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+            });
+    })
+    .WithTracing(tracingBuilder =>
+    {
+        tracingBuilder
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("PharmaGo.ApiGateway"))
+            .AddSource(Instrumentation.PharmaGoActivitySource.Name)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
             .AddOtlpExporter(options =>
             {
                 options.Endpoint = new Uri("http://otlp-collector:4317");

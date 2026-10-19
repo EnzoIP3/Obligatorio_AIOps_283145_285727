@@ -1,7 +1,11 @@
+using System.Diagnostics;
 using PharmaGo.PharmacyService.Factory;
 using PharmaGo.PharmacyService.Filters;
 using System.Diagnostics.CodeAnalysis;
 using Instrumentation;
+
+Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+Activity.ForceDefaultIdFormat = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
