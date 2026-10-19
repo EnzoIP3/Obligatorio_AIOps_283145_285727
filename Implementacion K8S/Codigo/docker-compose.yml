@@ -63,6 +63,7 @@ services:
     depends_on:
       - pharmago-users-service
       - pharmago-pharmacy-service
+      - otlp-collector
       - elasticsearch
     networks:
       - pharmago-network

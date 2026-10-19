@@ -49,7 +49,11 @@ builder.Services.AddOpenTelemetry()
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddMeter("PharmaGo.CustomMetrics")
-            .AddPrometheusExporter();
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri("http://otlp-collector:4317");
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+            });
     });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -92,7 +96,6 @@ else if (rateLimitMode.Equals("User", StringComparison.OrdinalIgnoreCase))
 app.UseAuthorization();
 
 app.MapReverseProxy();
-app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 

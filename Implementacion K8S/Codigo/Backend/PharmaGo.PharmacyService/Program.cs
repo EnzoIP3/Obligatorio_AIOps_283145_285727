@@ -50,7 +50,6 @@ app.MapHealthChecks("/health");
 app.UseMetricsMiddleware();
 
 app.MapControllers();
-app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 
