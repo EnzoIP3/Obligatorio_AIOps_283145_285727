@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using AspNetCoreRateLimit;
 using PharmaGo.ApiGateway.Middleware;
 using Instrumentation;
