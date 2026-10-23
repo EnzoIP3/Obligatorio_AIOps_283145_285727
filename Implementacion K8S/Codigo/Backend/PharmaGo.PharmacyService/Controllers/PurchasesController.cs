@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Instrumentation;
 using InstrumentationInterface;
 using Microsoft.AspNetCore.Mvc;
 using PharmaGo.PharmacyService.IBusinessLogic;
@@ -67,6 +69,9 @@ namespace PharmaGo.PharmacyService.Controllers
         [HttpPost]
         public IActionResult CreatePurchase([FromBody] PurchaseModelRequest purchaseModel)
         {
+            using var activity = PharmaGoActivitySource.Source.StartActivity("pharmacy.purchase.create", ActivityKind.Internal);
+            activity?.SetTag("pharmago.operation", "create_purchase");
+
             try
             {
                 var converter = new PurchaseModelRequestToPurchaseConverter();
@@ -80,8 +85,7 @@ namespace PharmaGo.PharmacyService.Controllers
                         ["operation"] = "create_purchase",
                         ["outcome"] = "success",
                         ["order_id"] = purchase.Id,
-                        ["tracking_code"] = purchase.TrackingCode,
-                        ["buyer_email"] = purchase.BuyerEmail
+                        ["tracking_code"] = purchase.TrackingCode
                     });
                 var purchaseModelResponse = new PurchaseModelResponse(purchase);
                 return Ok(purchaseModelResponse);
@@ -96,8 +100,7 @@ namespace PharmaGo.PharmacyService.Controllers
                         ["pharma_biz"] = "purchase_create_fail",
                         ["component"] = "PurchasesController",
                         ["operation"] = "create_purchase",
-                        ["outcome"] = "failed",
-                        ["buyer_email"] = purchaseModel?.BuyerEmail ?? ""
+                        ["outcome"] = "failed"
                     });
                 throw;
             }

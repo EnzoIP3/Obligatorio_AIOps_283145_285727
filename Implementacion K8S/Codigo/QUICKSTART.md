@@ -21,6 +21,7 @@ Esto levanta automáticamente:
 - Prometheus
 - Grafana
 - OpenTelemetry Collector
+- Jaeger
 
 ### Acceso a Servicios
 
@@ -32,6 +33,7 @@ Esto levanta automáticamente:
 - **Grafana**: http://127.0.0.1:3000 (admin/admin)
   - Datasource de Prometheus pre-configurado
   - Dashboard "PharmaGo - Overview" incluido
+- **Jaeger**: http://127.0.0.1:16686
 
 ### Persistencia de Datos
 
@@ -111,9 +113,12 @@ dotnet test
 # Acceder a Prometheus Targets
 http://127.0.0.1:9090/targets
 
-# Verificar métricas directamente
-curl http://127.0.0.1:5000/metrics
-curl http://127.0.0.1:5001/metrics
-curl http://127.0.0.1:5002/metrics
+# Las métricas de aplicación siguen este flujo:
+# servicios .NET -> OTLP Collector -> Prometheus
+# Consultar una métrica desde Prometheus:
+curl "http://127.0.0.1:9090/api/v1/query?query=pharmago_http_requests_total"
+
+# Verificar la salud de los targets:
+curl http://127.0.0.1:9090/api/v1/targets
 ```
 

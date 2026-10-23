@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Instrumentation;
 using InstrumentationInterface;
 using Microsoft.AspNetCore.Mvc;
 using PharmaGo.UsersService.IBusinessLogic;
@@ -24,6 +26,9 @@ namespace PharmaGo.UsersService.Controllers
         [HttpPost]
         public IActionResult Login([FromBody] LoginModelRequest userModel)
         {
+            using var activity = PharmaGoActivitySource.Source.StartActivity("users.login", ActivityKind.Internal);
+            activity?.SetTag("pharmago.operation", "login");
+
             _customMetrics.LoginInvocations();
             
             try
@@ -38,7 +43,6 @@ namespace PharmaGo.UsersService.Controllers
                         ["component"] = "LoginController",
                         ["operation"] = "login",
                         ["outcome"] = "success",
-                        ["user_name"] = authorization.UserName,
                         ["user_id"] = authorization.UserId
                     });
                 
@@ -55,7 +59,7 @@ namespace PharmaGo.UsersService.Controllers
                         ["component"] = "LoginController",
                         ["operation"] = "login",
                         ["outcome"] = "failed",
-                        ["user_name"] = userModel.UserName ?? "unknown"
+                        ["user_provided"] = !string.IsNullOrWhiteSpace(userModel.UserName)
                     });
                 
                 throw;

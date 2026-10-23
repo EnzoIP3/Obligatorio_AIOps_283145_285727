@@ -114,6 +114,9 @@ if [ $timeout -ge $max_timeout ]; then
 fi
 
 # Resto de servicios ops
+kubectl apply -f services/ops/jaeger-service.yaml
+kubectl apply -f deployments/ops/jaeger-deployment.yaml
+
 kubectl apply -f services/ops/otel-collector-service.yaml
 kubectl apply -f deployments/ops/otel-collector-deployment.yaml
 

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using OpenTelemetry.Exporter;
 using System.Diagnostics;
 
@@ -11,17 +12,31 @@ namespace PharmaGo.UsersService.Factory
         public static IServiceCollection AddPharmaGoOpenTelemetryMetrics(this IServiceCollection services, string serviceName = "PharmaGo.UsersService")
         {
             services.AddOpenTelemetry()
-                    .WithMetrics(metricsBuilder => { metricsBuilder
-                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddMeter("PharmaGo.CustomMetrics")
-                    .AddPrometheusExporter()
-                    .AddOtlpExporter(options =>
-                        {
-                            options.Endpoint = new Uri("http://otlp-collector:4317");
-                            options.Protocol = OtlpExportProtocol.Grpc;
-                        });
+                    .WithMetrics(metricsBuilder =>
+                    {
+                        metricsBuilder
+                            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
+                            .AddAspNetCoreInstrumentation()
+                            .AddHttpClientInstrumentation()
+                            .AddMeter("PharmaGo.CustomMetrics")
+                            .AddOtlpExporter(options =>
+                            {
+                                options.Endpoint = new Uri("http://otlp-collector:4317");
+                                options.Protocol = OtlpExportProtocol.Grpc;
+                            });
+                    })
+                    .WithTracing(tracingBuilder =>
+                    {
+                        tracingBuilder
+                            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName))
+                            .AddSource(Instrumentation.PharmaGoActivitySource.Name)
+                            .AddAspNetCoreInstrumentation()
+                            .AddHttpClientInstrumentation()
+                            .AddOtlpExporter(options =>
+                            {
+                                options.Endpoint = new Uri("http://otlp-collector:4317");
+                                options.Protocol = OtlpExportProtocol.Grpc;
+                            });
                     });
 
             return services;

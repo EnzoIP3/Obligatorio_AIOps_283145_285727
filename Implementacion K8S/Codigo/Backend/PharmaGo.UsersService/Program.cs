@@ -1,7 +1,11 @@
+using System.Diagnostics;
 using PharmaGo.UsersService.Factory;
 using PharmaGo.UsersService.Filters;
 using System.Diagnostics.CodeAnalysis;
 using Instrumentation;
+
+Activity.DefaultIdFormat = ActivityIdFormat.W3C;
+Activity.ForceDefaultIdFormat = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +47,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("MyAllowedOrigins");
 app.UseServiceCorrelationScope();
+app.UseStructuredRequestLogging();
 
 app.UseAuthorization();
 
@@ -50,7 +55,6 @@ app.MapHealthChecks("/health");
 app.UseMetricsMiddleware();
 
 app.MapControllers();
-app.MapPrometheusScrapingEndpoint();
 
 app.Run();
 

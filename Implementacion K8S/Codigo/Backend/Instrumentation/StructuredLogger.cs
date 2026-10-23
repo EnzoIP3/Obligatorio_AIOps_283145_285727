@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
@@ -119,8 +120,15 @@ namespace Instrumentation
                 ["timestamp_utc"] = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture),
                 ["level"] = ToLevelLabel(logLevel),
                 ["service"] = _hostEnvironment.ApplicationName,
+                ["environment"] = _hostEnvironment.EnvironmentName,
                 ["correlation_id"] = correlationId
             };
+
+            if (Activity.Current is { } activity)
+            {
+                scopeData["trace_id"] = activity.TraceId.ToString();
+                scopeData["span_id"] = activity.SpanId.ToString();
+            }
 
             if (metadata != null)
             {
